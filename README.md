@@ -1,2 +1,2 @@
-# hate-news-spreading
-Intelligent Information  Systems
+# Hate-news-spreading
+Intelligent Information  Systems Project
