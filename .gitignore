@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+#large folders
+graphs/
+.idea/
+scripts/.idea
+scripts/.ipynb_checkpoints
