@@ -3,14 +3,30 @@ import torch as th
 import dgl
 from scripts.embeddings import load_embeddings
 
-USER_TWEETS_EDGES = 'data/users-written-tweets.csv'
-TWEETS_WORDS_EDGES = 'data/tweet-contains-words.csv'
-USERS_EMBEDDINGS = 'data/users_embeddings.pkl'
-TWEETS_EMBEDDINGS = 'data/tweets_embeddings.pkl'
-WORDS_EMBEDDINGS = 'data/words_embeddings.pkl'
-USERS_CSV = 'data/users.csv'
+USER_TWEETS_EDGES_EN = 'data/users-written-tweets_en.csv'
+TWEETS_WORDS_EDGES_EN = 'data/tweet-contains-words_en.csv'
+USERS_EMBEDDINGS_EN = 'data/users_embeddings_en.pkl'
+TWEETS_EMBEDDINGS_EN = 'data/tweets_embeddings_en.pkl'
+WORDS_EMBEDDINGS_EN = 'data/words_embeddings_en.pkl'
+USERS_CSV_EN = 'data/users_en.csv'
 
-def load_user_tweet_edges():
+USER_TWEETS_EDGES_ES = 'data/users-written-tweets_es.csv'
+TWEETS_WORDS_EDGES_ES = 'data/tweet-contains-words_es.csv'
+USERS_EMBEDDINGS_ES = 'data/users_embeddings_es.pkl'
+TWEETS_EMBEDDINGS_ES = 'data/tweets_embeddings_es.pkl'
+WORDS_EMBEDDINGS_ES = 'data/words_embeddings_es.pkl'
+USERS_CSV_ES = 'data/users_es.csv'
+
+HET_GRAPH_PATH_EN = 'graphs/heterograph_en.bin'
+HET_GRAPH_PATH_ES = 'graphs/heterograph_es.bin'
+
+
+def load_user_tweet_edges(language='en'):
+    if language == 'en':
+        USER_TWEETS_EDGES = USER_TWEETS_EDGES_EN
+    else:
+        USER_TWEETS_EDGES = USER_TWEETS_EDGES_ES
+
     user_tweets_df = pd.read_csv(USER_TWEETS_EDGES, delimiter=',', header=0)
 
     users = th.tensor(user_tweets_df['USER_ID'].tolist())
@@ -21,7 +37,12 @@ def load_user_tweet_edges():
     return user_tweets_edges, tweets_user_edges
 
 
-def load_tweet_words_edges():
+def load_tweet_words_edges(language='en'):
+    if language == 'en':
+        TWEETS_WORDS_EDGES = TWEETS_WORDS_EDGES_EN
+    else:
+        TWEETS_WORDS_EDGES = TWEETS_WORDS_EDGES_ES
+
     tweets_words_df = pd.read_csv(TWEETS_WORDS_EDGES, delimiter=',', header=0)
 
     tweets = th.tensor(tweets_words_df['TWEET_ID'].tolist())
@@ -32,9 +53,22 @@ def load_tweet_words_edges():
     return tweets_words_edges, words_tweets_edges
 
 
-def create_heterograph():
-    user_tweets_edges, tweets_user_edges = load_user_tweet_edges()
-    tweets_words_edges, words_tweets_edges = load_tweet_words_edges()
+def create_heterograph(language='en'):
+    if language == 'en':
+        USERS_EMBEDDINGS = USERS_EMBEDDINGS_EN
+        TWEETS_EMBEDDINGS = TWEETS_EMBEDDINGS_EN
+        WORDS_EMBEDDINGS = WORDS_EMBEDDINGS_EN
+        USERS_CSV = USERS_CSV_EN
+        graph_path = HET_GRAPH_PATH_EN
+    else:
+        USERS_EMBEDDINGS = USERS_EMBEDDINGS_ES
+        TWEETS_EMBEDDINGS = TWEETS_EMBEDDINGS_ES
+        WORDS_EMBEDDINGS = WORDS_EMBEDDINGS_ES
+        USERS_CSV = USERS_CSV_ES
+        graph_path = HET_GRAPH_PATH_ES
+
+    user_tweets_edges, tweets_user_edges = load_user_tweet_edges(language)
+    tweets_words_edges, words_tweets_edges = load_tweet_words_edges(language)
 
     graph_data = {
         ('user', 'writes', 'tweet'): user_tweets_edges,
@@ -57,4 +91,4 @@ def create_heterograph():
     labels = users_df['LABEL'].tolist()
     graph.nodes['user'].data['labels'] = th.tensor(labels)
 
-    dgl.save_graphs('graphs/heterograph.bin', graph)
+    dgl.save_graphs(graph_path, graph)

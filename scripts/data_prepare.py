@@ -82,9 +82,11 @@ def create_tweets_csv(language='en'):
     if language == 'en':
         filepath = TWEETS_CSV_EN
         TWEETS_HS_DATA = TWEETS_HS_DATA_EN
+        preprocess_language = 'english'
     else:
         filepath = TWEETS_CSV_ES
         TWEETS_HS_DATA = TWEETS_HS_DATA_ES
+        preprocess_language = 'spanish'
 
     df = pd.read_csv(TWEETS_HS_DATA)
     mapped_users = load_user_mappings(language)
@@ -96,7 +98,7 @@ def create_tweets_csv(language='en'):
             user_id = row[0]
             raw_text = row[1]
             user_map_id = mapped_users[user_id]
-            text = preprocess_tweet(raw_text)
+            text = preprocess_tweet(raw_text, language=preprocess_language)
             if text and len(text) > 0:
                 writer.writerow((tweet_id, user_map_id, raw_text, text))
                 tweet_id = tweet_id + 1

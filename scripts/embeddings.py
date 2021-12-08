@@ -5,17 +5,24 @@ import pandas as pd
 import numpy as np
 import pickle
 
-TWEETS_CSV = 'data/tweets.csv'
-USERS_CSV = 'data/users.csv'
-WORDS_CSV = 'data/words.csv'
-TWEETS_WORDS_EDGES = 'data/tweet-contains-words.csv'
 MODEL = 'sentence-transformers/distiluse-base-multilingual-cased-v1'
-USERS_EMBEDDINGS = 'data/users_embeddings.pkl'
-TWEETS_EMBEDDINGS = 'data/tweets_embeddings.pkl'
-WORDS_EMBEDDINGS = 'data/words_embeddings.pkl'
 
+TWEETS_CSV_EN = 'data/tweets_en.csv'
+USERS_CSV_EN = 'data/users_en.csv'
+WORDS_CSV_EN = 'data/words_en.csv'
+TWEETS_WORDS_EDGES_EN = 'data/tweet-contains-words_en.csv'
+USERS_EMBEDDINGS_EN = 'data/users_embeddings_en.pkl'
+TWEETS_EMBEDDINGS_EN = 'data/tweets_embeddings_en.pkl'
+WORDS_EMBEDDINGS_EN = 'data/words_embeddings_en.pkl'
 
-# MODEL = 'sentence-transformers/paraphrase-multilingual-mpnet-base-v2'
+USERS_CSV_ES = 'data/users_es.csv'
+TWEETS_CSV_ES = 'data/tweets_es.csv'
+WORDS_CSV_ES = 'data/words_es.csv'
+TWEETS_WORDS_EDGES_ES = 'data/tweet-contains-words_es.csv'
+USERS_EMBEDDINGS_ES = 'data/users_embeddings_es.pkl'
+TWEETS_EMBEDDINGS_ES = 'data/tweets_embeddings_es.pkl'
+WORDS_EMBEDDINGS_ES = 'data/words_embeddings_es.pkl'
+
 
 def get_word_idx(sent: str, word: str):
     return sent.split(" ").index(word)
@@ -105,7 +112,16 @@ def generate_embeddings_util(raw_sentences: list) -> list:
     return embeddings
 
 
-def generate_user_embeddings():
+def generate_user_embeddings(language='en'):
+    if language == 'en':
+        USERS_CSV = USERS_CSV_EN
+        TWEETS_CSV = TWEETS_CSV_EN
+        USERS_EMBEDDINGS = USERS_EMBEDDINGS_EN
+    else:
+        USERS_CSV = USERS_CSV_ES
+        TWEETS_CSV = TWEETS_CSV_ES
+        USERS_EMBEDDINGS = USERS_EMBEDDINGS_ES
+
     users_df = pd.read_csv(USERS_CSV)
     tweets_df = pd.read_csv(TWEETS_CSV)
 
@@ -124,7 +140,14 @@ def generate_user_embeddings():
     save_embeddings(USERS_EMBEDDINGS, all_users, clean_sentences, embeddings)
 
 
-def generate_tweet_embeddings():
+def generate_tweet_embeddings(language='en'):
+    if language == 'en':
+        TWEETS_CSV = TWEETS_CSV_EN
+        TWEETS_EMBEDDINGS = TWEETS_EMBEDDINGS_EN
+    else:
+        TWEETS_CSV = TWEETS_CSV_ES
+        TWEETS_EMBEDDINGS = TWEETS_EMBEDDINGS_ES
+
     tweets_df = pd.read_csv(TWEETS_CSV)
 
     all_tweets = tweets_df['ID'].tolist()
@@ -135,7 +158,18 @@ def generate_tweet_embeddings():
     save_embeddings(TWEETS_EMBEDDINGS, all_tweets, clean_sentences, embeddings)
 
 
-def generate_word_embeddings():
+def generate_word_embeddings(language='en'):
+    if language == 'en':
+        TWEETS_CSV = TWEETS_CSV_EN
+        WORDS_CSV = WORDS_CSV_EN
+        TWEETS_WORDS_EDGES = TWEETS_WORDS_EDGES_EN
+        WORDS_EMBEDDINGS = WORDS_EMBEDDINGS_EN
+    else:
+        TWEETS_CSV = TWEETS_CSV_ES
+        WORDS_CSV = WORDS_CSV_ES
+        TWEETS_WORDS_EDGES = TWEETS_WORDS_EDGES_ES
+        WORDS_EMBEDDINGS = WORDS_EMBEDDINGS_ES
+
     tweet_words = pd.read_csv(TWEETS_WORDS_EDGES, header=0)
     tweets = pd.read_csv(TWEETS_CSV, header=0)
     words = pd.read_csv(WORDS_CSV, header=0)
