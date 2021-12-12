@@ -2,6 +2,61 @@ import numpy as np
 import torch as th
 import torch.nn as nn
 
+BEST_MODEL_EN = 'best_model_state_en.bin'
+BEST_MODEL_ES = 'best_model_state_es.bin'
+
+
+def train(language,
+          df_train,
+          df_val,
+          train_data_loader,
+          val_data_loader,
+          model,
+          epochs,
+          loss_fn,
+          optimizer,
+          scheduler):
+
+    if language == 'en':
+        best_model_path = BEST_MODEL_EN
+    else:
+        best_model_path = BEST_MODEL_ES
+
+    best_accuracy = 0
+    history = dict()
+    history['train_acc'] = list()
+    history['train_loss'] = list()
+    history['val_acc'] = list()
+    history['val_loss'] = list()
+
+    for epoch in range(epochs):
+        print(f'Epoch {epoch + 1}/{epochs}')
+        print('-' * 10)
+        train_acc, train_loss = train_epoch(
+            model,
+            train_data_loader,
+            loss_fn,
+            optimizer,
+            scheduler,
+            len(df_train)
+        )
+        print(f'Train loss {train_loss} accuracy {train_acc}')
+        val_acc, val_loss = eval_model(
+            model,
+            val_data_loader,
+            loss_fn,
+            len(df_val)
+        )
+        print(f'Val   loss {val_loss} accuracy {val_acc}')
+        print()
+        history['train_acc'].append(train_acc)
+        history['train_loss'].append(train_loss)
+        history['val_acc'].append(val_acc)
+        history['val_loss'].append(val_loss)
+        if val_acc > best_accuracy:
+            th.save(model.state_dict(), best_model_path)
+            best_accuracy = val_acc
+
 
 def train_epoch(model,
                 data_loader,
