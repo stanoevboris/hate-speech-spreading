@@ -32,21 +32,65 @@ def train(language,
     for epoch in range(epochs):
         print(f'Epoch {epoch + 1}/{epochs}')
         print('-' * 10)
-        train_acc, train_loss = train_epoch(
-            model,
-            train_data_loader,
-            loss_fn,
-            optimizer,
-            scheduler,
-            len(df_train)
-        )
+        # train_acc, train_loss = train_epoch(
+        #     model,
+        #     train_data_loader,
+        #     loss_fn,
+        #     optimizer,
+        #     scheduler,
+        #     len(df_train)
+        # )
+        model = model.train()
+        train_losses = []
+        correct_predictions = 0
+        for d in train_data_loader:
+            input_ids = d["input_ids"]
+            attention_mask = d["attention_mask"]
+            targets = d["targets"]
+            outputs = model(
+                input_ids=input_ids,
+                attention_mask=attention_mask
+            )
+
+            _, preds = th.max(th.round(outputs), dim=1)
+            loss = loss_fn(outputs.flatten(), targets)
+            correct_predictions += th.sum(preds == targets)
+            train_losses.append(loss.item())
+            loss.backward()
+            nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+            optimizer.step()
+            scheduler.step()
+            optimizer.zero_grad()
+
+        train_acc, train_loss = correct_predictions.double() / len(df_train), np.mean(train_losses)
         print(f'Train loss {train_loss} accuracy {train_acc}')
-        val_acc, val_loss = eval_model(
-            model,
-            val_data_loader,
-            loss_fn,
-            len(df_val)
-        )
+
+        # val_acc, val_loss = eval_model(
+        #     model,
+        #     val_data_loader,
+        #     loss_fn,
+        #     len(df_val)
+        # )
+        model = model.eval()
+        val_losses = []
+        correct_predictions = 0
+
+        with th.no_grad():
+            for d in val_data_loader:
+                input_ids = d["input_ids"]
+                attention_mask = d["attention_mask"]
+                targets = d["targets"]
+
+                outputs = model(
+                    input_ids=input_ids,
+                    attention_mask=attention_mask
+                )
+                _, preds = th.max(th.round(outputs), dim=1)
+                loss = loss_fn(outputs.flatten(), targets)
+                correct_predictions += th.sum(preds == targets)
+                val_losses.append(loss.item())
+
+        val_acc, val_loss = correct_predictions.double() / len(df_val), np.mean(val_losses)
         print(f'Val   loss {val_loss} accuracy {val_acc}')
         print()
         history['train_acc'].append(train_acc)
